@@ -29,6 +29,8 @@ def text_node_to_html_node(text_node):
 
 class TextNode():
     def __eq__(self, other):
+        if not isinstance(other, TextNode):
+            return False
         if self.text == other.text and self.text_type == other.text_type and self.url == other.url:
             return True
         return False
