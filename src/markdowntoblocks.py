@@ -1,4 +1,10 @@
 from enum import Enum
+from textnode import TextNode, TextType, text_node_to_html_node
+from texttotextnodes import text_to_textnodes
+from textnode import text_node_to_html_node
+from leafnode import LeafNode
+from htmlnode import HTMLNode
+from parentnode import ParentNode
 
 class BlockType(Enum):
     PARAGRAPH = 1
@@ -7,6 +13,51 @@ class BlockType(Enum):
     QUOTE = 4
     UNORDERED_LIST = 5
     ORDERED_LIST = 6
+
+def markdown_to_html_node(markdown):
+    blocks = markdown_to_blocks(markdown)
+    result = ""
+    for block in blocks:
+        block_type = block_to_block_type(block)
+
+        match block_type:
+            case BlockType.CODE:
+                text = block.lstrip("```\n").rstrip("```")
+                text_node = TextNode(text, TextType.CODE)
+                node = text_node_to_html_node(text_node)
+                node = ParentNode("pre", node.to_html())
+            case BlockType.PARAGRAPH:
+                tag = "p"
+                lines = block.split("\n")
+                paragraph = " ".join(lines)
+                children = text_to_children(paragraph)
+                node = ParentNode(tag, children)
+            case BlockType.HEADING:
+                tag = "h1"
+                # through <h6>
+                node = LeafNode(tag, block)
+            case BlockType.QUOTE:
+                tag = "blockquote"
+                node = LeafNode(tag, block)
+            case BlockType.UNORDERED_LIST:
+                tag = "ul"
+                # subtag "li"
+            case BlockType.ORDERED_LIST:
+                tag = "ol"
+                # subtag "li"
+        
+        result += node.to_html()
+        
+    return ParentNode("div", result)
+
+
+        
+def text_to_children(text):
+    result = list()
+    nodes = text_to_textnodes(text)
+    for node in nodes:
+        result.append(text_node_to_html_node(node))
+    return result
 
 
 def block_to_block_type(markdown):
