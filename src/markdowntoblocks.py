@@ -96,7 +96,7 @@ def block_to_block_type(markdown):
     
     first_char = split_lines[0][0]
     for line in split_lines:
-        if line[0] != first_char or line[1] != " ":
+        if line[0] != first_char and line[1] == " ":
             return BlockType.PARAGRAPH
         
     match first_char:
