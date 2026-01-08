@@ -5,6 +5,7 @@ from textnode import text_node_to_html_node
 from leafnode import LeafNode
 from htmlnode import HTMLNode
 from parentnode import ParentNode
+import re
 
 class BlockType(Enum):
     PARAGRAPH = 1
@@ -26,31 +27,50 @@ def markdown_to_html_node(markdown):
                 text_node = TextNode(text, TextType.CODE)
                 node = text_node_to_html_node(text_node)
                 node = ParentNode("pre", node.to_html())
+
             case BlockType.PARAGRAPH:
                 tag = "p"
                 lines = block.split("\n")
                 paragraph = " ".join(lines)
                 children = text_to_children(paragraph)
                 node = ParentNode(tag, children)
+
             case BlockType.HEADING:
-                tag = "h1"
-                # through <h6>
-                node = LeafNode(tag, block)
+                count = block.count("#")
+                if count < 1 or count > 6:
+                    continue
+                tag = f"h{count}"
+                text = re.sub(r'^#+ ', '', block)
+                node = LeafNode(tag, text)
+
             case BlockType.QUOTE:
                 tag = "blockquote"
-                node = LeafNode(tag, block)
+                node = ParentNode(tag, block)
+
             case BlockType.UNORDERED_LIST:
                 tag = "ul"
-                # subtag "li"
+                subtag = "li"
+                list_items = list()
+                lines = block.split("\n")
+                for line in lines:
+                    line = line.lstrip("- ")
+                    inner_node = ParentNode(subtag, line)
+                    list_items.append(inner_node)
+                node = ParentNode(tag, list_items)
+
             case BlockType.ORDERED_LIST:
                 tag = "ol"
-                # subtag "li"
+                subtag = "li"
+                list_items = list()
+                lines = block.split("\n")
+                for line in lines:
+                    line = re.sub(r'^\d+\. ', '', line)
+                    inner_node = ParentNode(subtag, line)
+                    list_items.append(inner_node)
+                node = ParentNode(tag, list_items)
         
         result += node.to_html()
-        
     return ParentNode("div", result)
-
-
         
 def text_to_children(text):
     result = list()
@@ -68,6 +88,12 @@ def block_to_block_type(markdown):
         return BlockType.CODE
     
     split_lines = markdown.split("\n")
+    
+    # check for ordered list: number at start followed by period
+    pattern = r"^\d+\."
+    if re.match(pattern, split_lines[0]):
+        return BlockType.ORDERED_LIST
+    
     first_char = split_lines[0][0]
     for line in split_lines:
         if line[0] != first_char or line[1] != " ":
@@ -78,8 +104,10 @@ def block_to_block_type(markdown):
             return BlockType.QUOTE
         case "-":
             return BlockType.UNORDERED_LIST
-        case ".":
-            return BlockType.ORDERED_LIST
+        # case ".":
+        #     return BlockType.ORDERED_LIST
+    
+    
     
     return BlockType.PARAGRAPH
 
