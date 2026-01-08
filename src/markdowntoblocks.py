@@ -45,7 +45,14 @@ def markdown_to_html_node(markdown):
 
             case BlockType.QUOTE:
                 tag = "blockquote"
-                node = ParentNode(tag, block)
+                lines = block.split("\n")
+                list_lines = list()
+                for line in lines:
+                    line = line.lstrip("> ")
+                    list_lines.append(line)
+                text = "\n".join(list_lines)
+                children = text_to_children(text)
+                node = ParentNode(tag, children)
 
             case BlockType.UNORDERED_LIST:
                 tag = "ul"
@@ -54,7 +61,8 @@ def markdown_to_html_node(markdown):
                 lines = block.split("\n")
                 for line in lines:
                     line = line.lstrip("- ")
-                    inner_node = ParentNode(subtag, line)
+                    children = text_to_children(line)
+                    inner_node = ParentNode(subtag, children)
                     list_items.append(inner_node)
                 node = ParentNode(tag, list_items)
 
@@ -65,7 +73,8 @@ def markdown_to_html_node(markdown):
                 lines = block.split("\n")
                 for line in lines:
                     line = re.sub(r'^\d+\. ', '', line)
-                    inner_node = ParentNode(subtag, line)
+                    children = text_to_children(line)
+                    inner_node = ParentNode(subtag, children)
                     list_items.append(inner_node)
                 node = ParentNode(tag, list_items)
         

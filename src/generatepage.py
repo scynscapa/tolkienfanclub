@@ -33,12 +33,12 @@ def generate_page(from_path, template_path, dest_path):
     title = extract_title(content)
     html = markdown_to_html_node(content).to_html()
     
-    html = html.replace("{{ Title }}", title)
-    html = html.replace("{{ Content }}", html)
+    result = template.replace("{{ Title }}", title)
+    result = result.replace("{{ Content }}", html)
 
     if not os.path.exists(os.path.dirname(dest_path)):
         os.makedirs(os.path.dirname(dest_path))
 
     with open(dest_path, "w") as h:
-        h.write(html)
+        h.write(result)
     
