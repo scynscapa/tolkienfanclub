@@ -1,8 +1,7 @@
-from textnode import TextNode
+from copystatic import copy_static
 
 def main():
-    text_node = TextNode("test text", "bold", "fake url")
-    print(text_node)
+    copy_static()
 
 
 if __name__ == "__main__":
