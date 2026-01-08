@@ -2,7 +2,7 @@ import os
 import shutil
 
 def copy_static():
-    destination = "public"
+    destination = "docs"
     static = "static"
 
     if os.path.exists(destination):
